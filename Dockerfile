@@ -29,6 +29,7 @@ RUN apt update && apt dist-upgrade -yy && \
 COPY --from=downloader /iventoy /iventoy
 
 COPY files/supervisord.conf /etc/supervisor/supervisord.conf
+COPY docker-entrypoint.sh /docker-entrypoint.sh
 
 VOLUME /iventoy/iso /iventoy/data /iventoy/log /iventoy/user
 
@@ -36,8 +37,10 @@ RUN ln -sf /proc/1/fd/1 /iventoy/log/log.txt
 
 WORKDIR /iventoy
 
+RUN cp -ra ./data ./data.orig
+
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD nc -z localhost 26000 || exit 1
 
 EXPOSE 26000 16000 10809 69/udp 67-68/udp
-ENTRYPOINT ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
+ENTRYPOINT ["/docker-entrypoint.sh"]
