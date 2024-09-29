@@ -6,12 +6,13 @@ The image is based on Debian 12 Bookworm slim version and uses supervisor to lau
 
 Note: The way iVentoy has been developed is really weird, there's no daemon or flags (I can find), so just ignore supervisor warnings for now.
 
-## Versions
+---
 
-Docker Tag:
-* 1.0.20-1 : iVentoy v1.0.20,  Logs symlinked from /iventoy/log/log.txt to syslog
-* 1.0.20   : iVentoy v1.0.20
-* 1.0.19   : iVentoy v1.0.19
+# Tags
+
+| Image | Tag | Build | Latest |
+|:------------------:|:--------------:|:-----------------:|:-----------------:|
+| ghcr.io/lizenzfass78851/docker-iventoy | main | [![Build and Publish Docker Image](https://github.com/LizenzFass78851/docker-iventoy/actions/workflows/docker-image.yml/badge.svg?branch=main)](https://github.com/LizenzFass78851/docker-iventoy/actions/workflows/docker-image.yml) | 📌 |
 
 ## Usage
 
@@ -41,7 +42,7 @@ Port 10809 is Linux Network Block Device - I'm not quite sure what iVentoy uses 
 There are a couple of volumes you can mount, the primary is the `iso` folder, which surprisingly containts your iso images you want to boot.
 
 ```
-docker run -d --privileged -p 69:69 -p 26000:26000 -p 16000:16000 -p 10809:10809 -v /path/to/iso:/iventoy/iso garybowers/iventoy:latest
+docker run -d --privileged -p 69:69 -p 26000:26000 -p 16000:16000 -p 10809:10809 -v /path/to/iso:/iventoy/iso ghcr.io/lizenzfass78851/docker-iventoy:latest
 ```
 
 ### Persisting Configuration
@@ -50,7 +51,7 @@ Another oddity with iVentoy it looks for a /iventoy/data/iventoy.dat file and if
 
 1. Run iVentoy without the data volume mapped 
 ```
-docker run -d --privileged -p 69:69 -p 26000:26000 -p 16000:16000 -p 10809:10809 -v /path/to/isos:/iventoy/iso --name iventoy-tmp garybowers/iventoy:latest
+docker run -d --privileged -p 69:69 -p 26000:26000 -p 16000:16000 -p 10809:10809 -v /path/to/isos:/iventoy/iso --name iventoy-tmp ghcr.io/lizenzfass78851/docker-iventoy:latest
 ```
 
 copy the contents of the data folder to your persistent storage
@@ -70,13 +71,13 @@ docker rm iventoy-tmp --force
 Run iVentoy with the volume for data mounted.
 
 ```
-docker run -d --privileged -p 69:69 -p 26000:26000 -p 16000:16000 -p 10809:10809 -v /path/to/isos:/iventoy/iso -v /path/to/data:/iventoy/data --name iventoy garybowers/iventoy:latest
+docker run -d --privileged -p 69:69 -p 26000:26000 -p 16000:16000 -p 10809:10809 -v /path/to/isos:/iventoy/iso -v /path/to/data:/iventoy/data --name iventoy ghcr.io/lizenzfass78851/docker-iventoy:latest
 ```
 
 Alternatively run on host mode to serve PXE to docker host's LAN:
 
 ```
-docker run -d --privileged --net=host -v /path/to/isos:/iventoy/iso -v /path/to/data:/iventoy/data --name iventoy garybowers/iventoy:latest
+docker run -d --privileged --net=host -v /path/to/isos:/iventoy/iso -v /path/to/data:/iventoy/data --name iventoy ghcr.io/lizenzfass78851/docker-iventoy:latest
 ```
 
 ### Configure your DHCP server

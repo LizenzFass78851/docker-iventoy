@@ -2,15 +2,15 @@
 version: "3.8"
 services:
   iVentoy:
-    image: iventoy:latest
-    build: ./
+    image: ghcr.io/lizenzfass78851/docker-iventoy:latest
+    #build: ./
     container_name: iventoy
     restart: unless-stopped
     privileged: true
     hostname: iventoy
     #network_mode: "host"
     volumes:
-      # iventoy data (/iventoy/data) can't be mount because running error
+      # see https://github.com/LizenzFass78851/docker-iventoy?tab=readme-ov-file#persisting-configuration
       # - ./data/iventoy/data:/iventoy/data
       - ./data/iventoy/iso:/iventoy/iso
     # Only to use the "DHCP Server Port"
