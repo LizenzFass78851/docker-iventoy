@@ -2,18 +2,30 @@
 version: "3.8"
 services:
   iVentoy:
-    image: garybowers/iventoy:latest
+    image: iventoy:latest
+    build: ./
     container_name: iventoy
     restart: unless-stopped
     privileged: true
     hostname: iventoy
+    #network_mode: "host"
     volumes:
-      - /data/iventoy/data:/iventoy/data
-      - /data/iventoy/iso:/iventoy/iso
+      # iventoy data (/iventoy/data) can't be mount because running error
+      # - ./data/iventoy/data:/iventoy/data
+      - ./data/iventoy/iso:/iventoy/iso
+    # Only to use the "DHCP Server Port"
+    #cap_add:
+    # - NET_ADMIN
     ports:
+      # iVentoy GUI HTTP Server Port
       - 26000:26000
+      # iVentoy PXE Service HTTP Server Port
       - 16000:16000
+      # NBD Server Port
       - 10809:10809
+      # TFTP Server Port
       - 69:69/udp
+      # DHCP Server Port
+      # - 67:67/udp
     environment:
       - IVENTOY_AUTO_RUN=1

@@ -1,15 +1,32 @@
-FROM debian:bookworm-slim
-MAINTAINER gary@bowers1.com
+FROM debian:bookworm-slim AS downloader
 
 ENV DEBIANFRONTEND=noninteractive
 ARG IVENTOY_VERSION=1.0.20
 
-RUN apt update -y && apt install -y --no-install-recommends curl supervisor libglib2.0-dev libevent-dev libwim-dev
+RUN apt update && apt dist-upgrade -yy && \
+    apt install curl -yy && \
+    apt-get autoremove -yy && \
+    rm -rf /var/cache/apt /var/lib/apt/lists
 
 RUN curl -kL https://github.com/ventoy/PXE/releases/download/v${IVENTOY_VERSION}/iventoy-${IVENTOY_VERSION}-linux-free.tar.gz -o /tmp/iventoy.tar.gz && \
     tar -xvzf /tmp/iventoy.tar.gz -C / && \
-    mv /iventoy-${IVENTOY_VERSION} /iventoy && \
-    mkdir -p /var/log/supervisor
+    mv /iventoy-${IVENTOY_VERSION} /iventoy
+
+FROM debian:bookworm-slim
+MAINTAINER gary@bowers1.com
+
+ENV DEBIANFRONTEND=noninteractive
+
+ENV IVENTOY_API_ALL=1
+ENV IVENTOY_AUTO_RUN=1
+
+RUN apt update && apt dist-upgrade -yy && \
+    apt install --no-install-recommends supervisor netcat-openbsd \ 
+    libevent-dev libglib2.0-dev libhivex-dev libc6-dev libwim-dev -yy && \
+    apt-get autoremove -yy && \
+    rm -rf /var/cache/apt /var/lib/apt/lists
+
+COPY --from=downloader /iventoy /iventoy
 
 COPY files/supervisord.conf /etc/supervisor/supervisord.conf
 
@@ -17,5 +34,10 @@ VOLUME /iventoy/iso /iventoy/data /iventoy/log /iventoy/user
 
 RUN ln -sf /proc/1/fd/1 /iventoy/log/log.txt
 
-EXPOSE 26000 16000 10809 69/udp
+WORKDIR /iventoy
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD nc -z localhost 26000 || exit 1
+
+EXPOSE 26000 16000 10809 69/udp 67-68/udp
 ENTRYPOINT ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
