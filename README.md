@@ -47,32 +47,7 @@ docker run -d --privileged -p 69:69 -p 26000:26000 -p 16000:16000 -p 10809:10809
 
 ### Persisting Configuration
 
-Another oddity with iVentoy it looks for a /iventoy/data/iventoy.dat file and if that doesn't exist on boot it will fail to load, this causes a issue wanting to persist the /iventoy/data folder.
-
-1. Run iVentoy without the data volume mapped 
-```
-docker run -d --privileged -p 69:69 -p 26000:26000 -p 16000:16000 -p 10809:10809 -v /path/to/isos:/iventoy/iso --name iventoy-tmp ghcr.io/lizenzfass78851/docker-iventoy:latest
-```
-
-copy the contents of the data folder to your persistent storage
-
-```
-sudo docker cp iventoy-tmp:/iventoy/data/iventoy.dat /my/local/storage/iventoy/data/
-sudo docker cp iventoy-tmp:/iventoy/data/config.dat /my/local/storage/iventoy/data/   <---[Might not exist, skip if not]
-sudo docker cp iventoy-tmp:/iventoy/data/mac.db /my/local/storage/iventoy/data/
-```
-
-delete the temporary container
-
-```
-docker rm iventoy-tmp --force
-```
-
-Run iVentoy with the volume for data mounted.
-
-```
-docker run -d --privileged -p 69:69 -p 26000:26000 -p 16000:16000 -p 10809:10809 -v /path/to/isos:/iventoy/iso -v /path/to/data:/iventoy/data --name iventoy ghcr.io/lizenzfass78851/docker-iventoy:latest
-```
+The problem regarding missing data from the iventoy data folder during volume mounting has been solved by a workaround in the docker container itself.
 
 Alternatively run on host mode to serve PXE to docker host's LAN:
 
