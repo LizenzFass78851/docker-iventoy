@@ -1,6 +1,6 @@
 FROM debian:bookworm-slim AS downloader
 
-ENV DEBIANFRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 ARG IVENTOY_VERSION=1.0.20
 
 RUN apt update && apt dist-upgrade -yy && \
@@ -15,7 +15,7 @@ RUN curl -kL https://github.com/ventoy/PXE/releases/download/v${IVENTOY_VERSION}
 FROM debian:bookworm-slim
 MAINTAINER gary@bowers1.com
 
-ENV DEBIANFRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 
 ENV IVENTOY_API_ALL=1
 ENV IVENTOY_AUTO_RUN=1
