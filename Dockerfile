@@ -1,4 +1,4 @@
-FROM debian:bookworm-slim AS downloader
+FROM debian:trixie-slim AS downloader
 
 ENV DEBIAN_FRONTEND=noninteractive
 ARG IVENTOY_VERSION=1.0.20
@@ -12,7 +12,7 @@ RUN curl -kL https://github.com/ventoy/PXE/releases/download/v${IVENTOY_VERSION}
     tar -xvzf /tmp/iventoy.tar.gz -C / && \
     mv /iventoy-${IVENTOY_VERSION} /iventoy
 
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 MAINTAINER gary@bowers1.com
 
 ENV DEBIAN_FRONTEND=noninteractive

@@ -49,7 +49,7 @@ From an infosec perspective, this is a massive red flag. You are essentially all
 
 This is a docker container packaging up the iVentoy tool [https://iventoy.com](https://iventoy.com)
 
-The image is based on Debian 12 Bookworm slim version and uses supervisor to launch the process.
+The image is based on Debian 13 Trixie slim version and uses supervisor to launch the process.
 
 Note: The way iVentoy has been developed is really weird, there's no daemon or flags (I can find), so just ignore supervisor warnings for now.
 
