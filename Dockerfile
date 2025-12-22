@@ -1,6 +1,6 @@
 FROM debian:trixie-slim AS downloader
 
-ENV DEBIAN_FRONTEND=noninteractive
+ARG DEBIAN_FRONTEND=noninteractive
 ARG IVENTOY_VERSION=1.0.21
 
 RUN apt update && apt dist-upgrade -yy && \
@@ -15,7 +15,7 @@ RUN curl -kL https://github.com/ventoy/PXE/releases/download/v${IVENTOY_VERSION}
 FROM debian:trixie-slim
 MAINTAINER gary@bowers1.com
 
-ENV DEBIAN_FRONTEND=noninteractive
+ARG DEBIAN_FRONTEND=noninteractive
 
 ENV IVENTOY_API_ALL=1
 ENV IVENTOY_AUTO_RUN=1
