@@ -8,8 +8,8 @@ RUN apt update && apt dist-upgrade -yy && \
     apt-get autoremove -yy && \
     rm -rf /var/cache/apt /var/lib/apt/lists
 
-RUN curl -kL https://github.com/ventoy/PXE/releases/download/v${IVENTOY_VERSION}/iventoy-${IVENTOY_VERSION}-linux-free.tar.gz -o /tmp/iventoy.tar.gz && \
-    tar -xvzf /tmp/iventoy.tar.gz -C / && \
+ADD https://github.com/ventoy/PXE/releases/download/v${IVENTOY_VERSION}/iventoy-${IVENTOY_VERSION}-linux-free.tar.gz /tmp/iventoy.tar.gz 
+RUN tar -xvzf /tmp/iventoy.tar.gz -C / && \
     mv /iventoy-${IVENTOY_VERSION} /iventoy
 
 FROM debian:trixie-slim
