@@ -1,57 +1,32 @@
-# iVentoy Container
-
-**tl;dr** – I’ve moved on from this. I’m now trying to build a proper, open-source PXE server in Go that doesn’t do anything shifty behind your back. Check it out:
-
-👉 [**https://github.com/garybowers/bootimus**](https://github.com/garybowers/bootimus)
-
-It’s cross-platform (ARM/AMD64), transparent, and won't mess (too much) with your boot images (you can still audit the code).
-Cheers for any feedback!
-
----
-
-## ⚠️ BEWARE: Security Concerns
-
-This project was originally intended to containerise iVentoy for easier deployment. However, I can no longer recommend using it due to some **properly dodgy security issues** that have come to light.
-
-### The Problem: "Black Box" Injections
-The main issue is what’s happening **under the bonnet**. iVentoy is closed-source and has been caught **silently injecting opaque drivers and certificates** into the boot process without disclosure. We’re talking about kernel-level drivers and fake root CAs being shoved into your WinPE/Linux runtime at boot time.
-
-From an infosec perspective, this is a massive red flag. You are essentially allowing a closed-source binary to patch your operating system at a kernel level before the OS is even installed.
-
-### Why this is a risk:
-* **Silent Injections:** iVentoy uses udev rule hijacking and device-mapper "tricks" to force ISOs to boot in ways they weren't designed for. While clever, this method involves patching the initramfs of the OS on-the-fly.
-
-* **Silent Certificate Injection:** iVentoy has been caught programmatically installing fake Root CAs into the Windows Registry at boot. This allows for total interception of encrypted traffic.
-
-* **Mystery Binary Blobs:** Significant portions of the code are distributed as pre-compiled blobs. Without reproducible builds, there is no way to verify they haven't been backdoored.
-
-* **Ancient Tooling:** The project relies on software dependencies from 2008 and EOL operating systems, making it a playground for unpatched vulnerabilities.
-
-* **State Compliance:** As a closed-source tool from China, it is subject to laws (like the 2021 RMSV) that require security flaws to be reported to the state 48 hours before the public is notified.
-
-
-* **Security Bypasses:** It uses questionable techniques (like fake EV certificates) to bypass Windows signature checks. (See: [Issue #106](https://github.com/ventoy/PXE/issues/106) and [Issue #118](https://github.com/ventoy/PXE/issues/118)).
-
-* **Jurisdictional Risk:** Because it is a closed binary operating under jurisdictions with strict National Intelligence Laws (China), there is no way to verify if "state-mandated" backdoors are present. In the world of "Black Hat" infosec, if you can't see the code, you can't trust the boot.
-
-**Use at your own peril.** I’d recommend looking at alternatives (one I'm working on) such as [**Bootimus**](https://github.com/garybowers/bootimus) instead. It’s 100% open-source, written in Go, and aims to provide the same easy drop-in ISO features without the security headaches or the hidden baggage.
-
-
-### Technical References & Sources
-- [Vulnerability Report: Silent Driver/Cert Injection (Issue #106)](https://github.com/ventoy/PXE/issues/106)
-- [Cisco Talos: Analysis of the JemmyLoveJenny Root CA tools used](https://blog.talosintelligence.com/old-certificate-new-signature/)
-- [Security Scrutiny: The Binary Blob Controversy](https://biggo.com/news/202508061917_Ventoy_Binary_Blobs_Security_Concerns)
-- [Legal Context: China's 2021 Vulnerability Reporting Mandates](https://oit.utk.edu/wp-content/uploads/China-National-Security-Laws.pdf)
-
----
-
 # Iventoy Container
 
 This is a docker container packaging up the iVentoy tool [https://iventoy.com](https://iventoy.com)
 
-The image is based on Debian 13 Trixie slim version and uses supervisor to launch the process.
+The image is based on Debian and uses supervisor to launch the process.
 
 Note: The way iVentoy has been developed is really weird, there's no daemon or flags (I can find), so just ignore supervisor warnings for now.
+
+---
+
+> [!CAUTION]
+> ### security problems.
+> 
+> This Docker Project contains iVentoy.
+>
+> iVentoy has security issues was currently not been fixed.
+>
+> See details of the security issues here: [garybowers/iventoy_docker](https://github.com/garybowers/iventoy_docker?tab=readme-ov-file#%EF%B8%8F-beware-security-concerns)
+>
+> Use of the container is at your own risk. (Best used only in test environments)
+
+> [!TIP]
+> ### looking for better pxe boot docker container?
+> 
+> Then check this out: [garybowers/bootimus](https://github.com/garybowers/bootimus)
+> 
+> It's a PXE boot server container that also runs on ARM devices, among others.
+>
+> The maintainer will appreciate any support for the project.
 
 ---
 
