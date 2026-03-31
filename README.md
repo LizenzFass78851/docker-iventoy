@@ -8,25 +8,19 @@ Note: The way iVentoy has been developed is really weird, there's no daemon or f
 
 ---
 
-> [!CAUTION]
-> ### security problems.
+> [!WARNING]
 > 
+> <details>
+>   <summary>security problems</summary> 
 > This Docker Project contains iVentoy.
 >
 > iVentoy has security issues was currently not been fixed.
 >
 > See details of the security issues here: [garybowers/iventoy_docker](https://github.com/garybowers/iventoy_docker?tab=readme-ov-file#%EF%B8%8F-beware-security-concerns)
 >
-> Use of the container is at your own risk. (Best used only in test environments)
-
-> [!TIP]
-> ### looking for better pxe boot docker container?
+> Use of the container is at your own risk. **(Best used only in test environments)**
+> </details>
 > 
-> Then check this out: [garybowers/bootimus](https://github.com/garybowers/bootimus)
-> 
-> It's a PXE boot server container that also runs on ARM devices, among others.
->
-> The maintainer will appreciate any support for the project.
 
 ---
 
