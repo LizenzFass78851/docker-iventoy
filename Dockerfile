@@ -1,7 +1,7 @@
 FROM debian:trixie-slim AS downloader
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG IVENTOY_VERSION=1.0.25
+ARG IVENTOY_VERSION="1.0.26"
 
 RUN apt update && apt dist-upgrade -yy && \
     apt install curl -yy && \
