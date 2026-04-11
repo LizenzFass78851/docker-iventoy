@@ -1,0 +1,63 @@
+name: Update Tagged Versions
+
+on:
+#  schedule:
+#    - cron: '0 3 */7 * *'
+  workflow_dispatch:
+
+jobs:
+  update-and-deploy:
+    runs-on: ubuntu-slim
+    if: github.repository == 'LizenzFass78851/docker-iventoy'
+    env:           
+      GIT_USER: github-actions[bot]
+      GIT_EMAIL: github-actions[bot]@users.noreply.github.com
+
+    steps:
+      - name: clone
+        uses: actions/checkout@v6
+        with:
+          clean: false
+
+      - name: Find latest tag (update build)
+        id: update_build_find_latest
+        uses: oprypin/find-latest-tag@v1
+        with:
+          repository: ventoy/PXE
+          releases-only: true
+      - name: update build
+        id: update_build
+        run: |
+          LATEST_TAG_LONG=${{ steps.update_build_find_latest.outputs.tag }}
+          LATEST_TAG=${LATEST_TAG_LONG#v}
+          
+          echo "BUILD_VER: $LATEST_TAG"
+
+          [ -n "$LATEST_TAG" ] && [ "$LATEST_TAG" != "null" ] && echo 'patching file' && sed -i "s|ARG IVENTOY_VERSION=.*|ARG IVENTOY_VERSION=\"$LATEST_TAG\"|g" $GITHUB_WORKSPACE/Dockerfile; \
+
+          # Commit changes if any
+          git add Dockerfile
+          git status
+          git config --local user.name ${{ env.GIT_USER }}
+          git config --local user.email ${{ env.GIT_EMAIL }}
+          if ! git diff --cached --quiet; then
+            git commit -m "feat: Update iventoy to ${LATEST_TAG}"
+            echo "updated=true" >> $GITHUB_OUTPUT
+          else
+            echo "updated=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --local credential.helper '!x() { echo "password=$GITHUB_TOKEN"; };x'
+          git push origin $GITHUB_REF_NAME
+
+      - name: trigger build workflow
+        if: steps.update_build.outputs.updated == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run docker-image.yml
+
