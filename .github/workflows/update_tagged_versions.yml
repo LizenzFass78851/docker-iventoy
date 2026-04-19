@@ -21,10 +21,18 @@ jobs:
 
       - name: Find latest tag (update build)
         id: update_build_find_latest
-        uses: oprypin/find-latest-tag@v1
-        with:
-          repository: ventoy/PXE
-          releases-only: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ventoy/PXE
+        run: |
+          if ! LATEST_TAG=$(gh api repos/$REPOSITORY/releases/latest --jq '.tag_name' 2>/dev/null); then
+            echo "::error::Failed to fetch latest tag for repository $REPOSITORY"
+          elif [ -z "$LATEST_TAG" ] || [ "$LATEST_TAG" = "null" ]; then
+            echo "::warning::No tags found for repository $REPOSITORY"
+          else
+            echo "::notice::Latest tag for repository $REPOSITORY: $LATEST_TAG"
+          fi
+          echo "tag=$LATEST_TAG" >> $GITHUB_OUTPUT
       - name: update build
         id: update_build
         run: |
