@@ -8,7 +8,13 @@ RUN apt update && apt dist-upgrade -yy && \
     apt-get autoremove -yy && \
     rm -rf /var/cache/apt /var/lib/apt/lists
 
-ADD https://github.com/ventoy/PXE/releases/download/v${IVENTOY_VERSION}/iventoy-${IVENTOY_VERSION}-linux-free.tar.gz /tmp/iventoy.tar.gz 
+RUN for a in free trial; do \
+        ARCH=$(if [ "$(uname -m)" != "x86_64" ]; then echo "arm64"; else echo "x86_64"; fi) && \
+        echo "Downloading iVentoy version ${IVENTOY_VERSION} for architecture ${ARCH} (${a})..." && \
+        curl -fSL "https://github.com/ventoy/PXE/releases/download/v${IVENTOY_VERSION}/iventoy-${IVENTOY_VERSION}-linux-${ARCH}-${a}.tar.gz" \
+        -o /tmp/iventoy.tar.gz && break; \
+    done
+
 RUN tar -xvzf /tmp/iventoy.tar.gz -C / && \
     mv /iventoy-${IVENTOY_VERSION} /iventoy
 

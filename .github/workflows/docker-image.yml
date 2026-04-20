@@ -105,7 +105,7 @@ jobs:
           build-args: GH_TOKEN=${{ github.token }}
           context: .
           file: ./Dockerfile
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           cache-to: ${{ github.event_name != 'pull_request' && 'type=gha,mode=max,ignore-error=true' || '' }}
           cache-from: ${{ github.event_name != 'pull_request' && 'type=gha' || '' }}
           push: ${{ github.event_name != 'pull_request' }}
