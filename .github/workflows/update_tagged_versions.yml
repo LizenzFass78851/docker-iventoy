@@ -1,8 +1,8 @@
 name: Update Tagged Versions
 
 on:
-#  schedule:
-#    - cron: '0 3 */7 * *'
+  schedule:
+    - cron: '0 15 * * *'
   workflow_dispatch:
 
 jobs:
@@ -12,6 +12,7 @@ jobs:
     env:           
       GIT_USER: github-actions[bot]
       GIT_EMAIL: github-actions[bot]@users.noreply.github.com
+      PR_BRANCH_PREFIX: feat/update-tagged_versions
 
     steps:
       - name: clone
@@ -55,17 +56,75 @@ jobs:
             echo "updated=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: create_pr_branchname
+        id: create_pr_branchname
         run: |
-          git config --local credential.helper '!x() { echo "password=$GITHUB_TOKEN"; };x'
-          git push origin $GITHUB_REF_NAME
+          echo "generating SHA File"
+          hash=$(cat $GITHUB_WORKSPACE/Dockerfile \
+            | sha256sum - --tag \
+            | awk '{print $4}')
+          if [[ "$hash" =~ ^[a-f0-9]{64}$ ]]; then
+            echo "HASH=$hash" > $GITHUB_OUTPUT
+          else
+            echo "::error:: Error: no valid SHA256" >&2 && exit 1
+          fi
 
-      - name: trigger build workflow
-        if: steps.update_build.outputs.updated == 'true'
+      - name: check if branch as open PR
+        id: check_open_pr
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_BRANCH: ${{ env.PR_BRANCH_PREFIX }}-${{ steps.create_pr_branchname.outputs.HASH }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          gh workflow run docker-image.yml
+          OPEN_PR=$(gh pr list --state open --head "$PR_BRANCH" --json number -q '.[0].number')
+          if [ -z "$OPEN_PR" ]; then
+            echo "NO_OPEN_PR=true" >> $GITHUB_OUTPUT
+          else
+            echo "NO_OPEN_PR=false" >> $GITHUB_OUTPUT
+          fi
+      - name: check if existing duplicate open PRs
+        id: check_duplicate_pr
+        if: ${{ steps.check_open_pr.outputs.NO_OPEN_PR == 'true' }}
+        env:
+          PR_BRANCH_PATTERN: ${{ env.PR_BRANCH_PREFIX }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          OPEN_PRS=$(gh pr list --state open --head "$PR_BRANCH_PATTERN" --json number -q '.[].number')
+          echo "Found open PRs with branch pattern '$PR_BRANCH_PATTERN': $OPEN_PRS"
+          echo "OPEN_PRS=$OPEN_PRS" >> $GITHUB_OUTPUT
+      - name: Close duplicate PRs
+        if: ${{ steps.check_open_pr.outputs.NO_OPEN_PR == 'true' }}
+        env:
+          OPEN_PRS: ${{ steps.check_duplicate_pr.outputs.OPEN_PRS }}
+          GH_TOKEN: ${{ secrets.PR_TOKEN }}
+        run: |
+          if [ -n "$OPEN_PRS" ]; then
+            while read -r PR_NUMBER; do
+              gh pr close "$PR_NUMBER" -d
+              echo "::notice::Closed duplicate PR #$PR_NUMBER"
+            done <<< "$OPEN_PRS"
+          fi
+      - name: Create Pull Request
+        if: ${{ steps.check_open_pr.outputs.NO_OPEN_PR == 'true' }}
+        uses: peter-evans/create-pull-request@v8
+        id: create_pr
+        with:
+          token: ${{ secrets.PR_TOKEN }}
+          title: 'Update Tagged Versions'
+          branch: feat/update-tagged_versions-${{ steps.create_pr_branchname.outputs.HASH }}
+          delete-branch: true
+          assignees: ${{ github.actor }}
+
+#     - name: push
+#       env:
+#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#       run: |
+#         git config --local credential.helper '!x() { echo "password=$GITHUB_TOKEN"; };x'
+#         git push origin $GITHUB_REF_NAME
+
+#     - name: trigger build workflow
+#       if: steps.update_build.outputs.updated == 'true'
+#       env:
+#         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#       run: |
+#         gh workflow run docker-image.yml
 
