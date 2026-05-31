@@ -73,6 +73,7 @@ jobs:
         run: |
           sudo docker run -t -d \
           --name ${{ env.CONTAINER_NAME }} \
+          -p 26000:26000 \
           -e IVENTOY_AUTO_RUN=1 \
           --privileged \
           $(echo "${{ steps.meta.outputs.tags }}" | head -n1)
@@ -82,6 +83,21 @@ jobs:
           name: ${{ env.CONTAINER_NAME }}
           log_check: "iVentoy auto running."
           timeout: 120
+      - name: test - specific tests
+        env:
+          WAITING_SECOND: 20
+        run: |
+          echo "waiting ${WAITING_SECOND} seconds to check if the container was not exiting" && sleep ${{ env.WAITING_SECOND }}
+          if [ "$(docker inspect -f '{{.State.Status}}' ${{ env.CONTAINER_NAME }})" = "exited" ]; then
+            echo "Container exited unexpectedly" && exit 1
+          else
+            echo "Container is running as expected"
+          fi
+          if curl -fs http://localhost:26000/ >/dev/null; then
+            echo "Web UI is reachable"
+          else
+            echo "Web UI is not reachable" && exit 1
+          fi
       - name: test - show logs
         if: always()
         run: |
