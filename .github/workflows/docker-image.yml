@@ -82,6 +82,16 @@ jobs:
           name: ${{ env.CONTAINER_NAME }}
           log_check: "iVentoy auto running."
           timeout: 120
+      - name: test - specific tests
+        env:
+          WAITING_SECOND: 20
+        run: |
+          echo "waiting ${WAITING_SECOND} seconds to check if the container was not exiting" && sleep ${{ env.WAITING_SECOND }}
+          if [ "$(docker inspect -f '{{.State.Status}}' ${{ env.CONTAINER_NAME }})" = "exited" ]; then
+            echo "Container exited unexpectedly" && exit 1
+          else
+            echo "Container is running as expected"
+          fi
       - name: test - show logs
         if: always()
         run: |
