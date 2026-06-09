@@ -88,7 +88,8 @@ jobs:
           PR_BRANCH_PATTERN: ${{ env.PR_BRANCH_PREFIX }}
           GH_TOKEN: ${{ github.token }}
         run: |
-          OPEN_PRS=$(gh pr list --state open --head "$PR_BRANCH_PATTERN" --json number -q '.[].number')
+          OPEN_PRS=$(gh pr list --state open --json number,headRefName \
+            | jq -r --arg prefix "$PR_BRANCH_PATTERN" '.[] | select(.headRefName | startswith($prefix)) | .number')
           echo "Found open PRs with branch pattern '$PR_BRANCH_PATTERN': $OPEN_PRS"
           echo "OPEN_PRS=$OPEN_PRS" >> $GITHUB_OUTPUT
       - name: Close duplicate PRs
