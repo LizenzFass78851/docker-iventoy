@@ -74,14 +74,13 @@ jobs:
           sudo docker run -t -d \
           --name ${{ env.CONTAINER_NAME }} \
           -p 26000:26000 \
-          -e IVENTOY_AUTO_RUN=1 \
           --privileged \
           $(echo "${{ steps.meta.outputs.tags }}" | head -n1)
       - name: test - check logs
         uses: crazy-max/.github/.github/actions/container-logs-check@main
         with:
           name: ${{ env.CONTAINER_NAME }}
-          log_check: "iVentoy auto running."
+          log_check: "iVentoy entering main loop"
           timeout: 120
       - name: test - specific tests
         env:

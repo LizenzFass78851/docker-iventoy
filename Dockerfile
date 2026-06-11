@@ -1,6 +1,10 @@
-FROM debian:trixie-slim AS downloader
+FROM debian:trixie-slim AS main
 
 ARG DEBIAN_FRONTEND=noninteractive
+
+FROM main AS downloader
+
+ARG DEBIAN_FRONTEND
 ARG IVENTOY_VERSION="1.0.31"
 
 RUN apt update && apt dist-upgrade -yy && \
@@ -8,34 +12,33 @@ RUN apt update && apt dist-upgrade -yy && \
     apt-get autoremove -yy && \
     rm -rf /var/cache/apt /var/lib/apt/lists
 
-RUN for a in free trial; do \
-        ARCH=$(if [ "$(uname -m)" != "x86_64" ]; then echo "arm64"; else echo "x86_64"; fi) && \
-        echo "Downloading iVentoy version ${IVENTOY_VERSION} for architecture ${ARCH} (${a})..." && \
-        curl -fSL "https://github.com/ventoy/PXE/releases/download/v${IVENTOY_VERSION}/iventoy-${IVENTOY_VERSION}-linux-${ARCH}-${a}.tar.gz" \
-        -o /tmp/iventoy.tar.gz && break; \
-    done
+RUN case "$(uname -m)" in \
+      x86_64)  ARCH="x86_64"; EDITION="free"  ;; \
+      aarch64) ARCH="arm64";  EDITION="trial" ;; \
+      *) echo "Unsupported architecture: ${TARGETARCH}"; exit 1 ;; \
+    esac && \
+    echo "Downloading iVentoy version ${IVENTOY_VERSION} for architecture ${ARCH} (${EDITION})..." && \
+    curl -fSL "https://github.com/ventoy/PXE/releases/download/v${IVENTOY_VERSION}/iventoy-${IVENTOY_VERSION}-linux-${ARCH}-${EDITION}.tar.gz" \
+    -o /tmp/iventoy.tar.gz
 
 RUN tar -xvzf /tmp/iventoy.tar.gz -C / && \
     mv /iventoy-${IVENTOY_VERSION} /iventoy
 
-FROM debian:trixie-slim
-MAINTAINER gary@bowers1.com
+FROM main
 
-ARG DEBIAN_FRONTEND=noninteractive
+ARG DEBIAN_FRONTEND
 
 ENV IVENTOY_API_ALL=1
-ENV IVENTOY_AUTO_RUN=1
 
 RUN apt update && apt dist-upgrade -yy && \
-    apt install --no-install-recommends supervisor netcat-openbsd \ 
-    libevent-dev libglib2.0-dev libhivex-dev libc6-dev libwim-dev -yy && \
+    apt install --no-install-recommends supervisor curl -yy && \
     apt-get autoremove -yy && \
     rm -rf /var/cache/apt /var/lib/apt/lists
 
 COPY --from=downloader /iventoy /iventoy
 
 COPY files/supervisord.conf /etc/supervisor/supervisord.conf
-COPY docker-entrypoint.sh /docker-entrypoint.sh
+COPY --chmod=0755 docker-entrypoint.sh /docker-entrypoint.sh
 
 VOLUME /iventoy/iso /iventoy/data /iventoy/log /iventoy/user
 
@@ -43,10 +46,10 @@ RUN ln -sf /proc/1/fd/1 /iventoy/log/log.txt
 
 WORKDIR /iventoy
 
-RUN cp -ra ./data ./data.orig
+RUN bash -c 'cp -ra ./data{,.orig}'
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD nc -z localhost 26000 || exit 1
+    CMD curl -fs http://localhost:26000/ >/dev/null || exit 1
 
 EXPOSE 26000 16000 10809 69/udp 67-68/udp
 ENTRYPOINT ["/docker-entrypoint.sh"]

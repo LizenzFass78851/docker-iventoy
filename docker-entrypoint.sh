@@ -1,17 +1,16 @@
 #!/bin/bash
 
+set -e
+set -u
+
 DATAFOLDER=data
-ORIGDATAFOLDER=data.orig
-DATAFILES="$(ls ./$ORIGDATAFOLDER)"
-echo checking if exist files of $DATAFOLDER folder
-for DATAFILE in ${DATAFILES}; do
-	echo checking if exist $DATAFILE
-	if [ ! -f ./$DATAFOLDER/$DATAFILE ]; then
-		echo copy orig $DATAFILE to $DATAFOLDER folder
-		cp -a ./$ORIGDATAFOLDER/$DATAFILE ./$DATAFOLDER/$DATAFILE
-	fi
+echo "checking if exist files of ${DATAFOLDER} folder"
+for DATAFILE in $(find ./${DATAFOLDER} -type f -printf "%f\n"); do
+    echo "checking if exist ${DATAFILE}"
+    if [ ! -f ./${DATAFOLDER}/${DATAFILE} ]; then
+        echo "copy orig ${DATAFILE} to ${DATAFOLDER} folder"
+        cp -a ./${DATAFOLDER}{.orig,}/${DATAFILE}
+    fi
 done
 
-/usr/bin/supervisord -c /etc/supervisor/supervisord.conf
-
-exec "$@"
+exec /usr/bin/supervisord -c /etc/supervisor/supervisord.conf "$@"
