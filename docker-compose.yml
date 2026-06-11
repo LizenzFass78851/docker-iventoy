@@ -14,9 +14,8 @@ services:
     volumes:
       - ./data/iventoy/data:/iventoy/data
       - ./data/iventoy/iso:/iventoy/iso
-    # Only to use the "DHCP Server Port"
     #cap_add:
-    # - NET_ADMIN
+    #  - NET_ADMIN #Only to use the "DHCP Server Port"
     ports:
       # iVentoy GUI HTTP Server Port
       - 26000:26000
@@ -28,5 +27,5 @@ services:
       - 69:69/udp
       # DHCP Server Port
       # - 67:67/udp
-    environment:
-      - IVENTOY_AUTO_RUN=1
+    #environment:
+    #  - IVENTOY_AUTO_RUN=1 #Please don't set this when the container runs the first time!
