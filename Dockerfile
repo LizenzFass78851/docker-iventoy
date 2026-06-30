@@ -5,7 +5,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 FROM main AS downloader
 
 ARG DEBIAN_FRONTEND
-ARG IVENTOY_VERSION="1.0.36"
+ARG IVENTOY_VERSION="1.0.37"
 
 RUN apt update && apt dist-upgrade -yy && \
     apt install curl -yy && \
