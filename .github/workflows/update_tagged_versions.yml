@@ -14,11 +14,6 @@ jobs:
       GIT_EMAIL: github-actions[bot]@users.noreply.github.com
       PR_BRANCH_PREFIX: feat/update-tagged_versions
 
-    permissions:
-      contents: read
-      issues: write
-      pull-requests: write
-
     steps:
       - name: clone
         uses: actions/checkout@v7
@@ -101,7 +96,7 @@ jobs:
         if: ${{ steps.check_open_pr.outputs.NO_OPEN_PR == 'true' }}
         env:
           OPEN_PRS: ${{ steps.check_duplicate_pr.outputs.OPEN_PRS }}
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.PR_TOKEN }}
         run: |
           if [ -n "$OPEN_PRS" ]; then
             while read -r PR_NUMBER; do
@@ -114,7 +109,7 @@ jobs:
         uses: peter-evans/create-pull-request@v8
         id: create_pr
         with:
-          token: ${{ github.token }}
+          token: ${{ secrets.PR_TOKEN }}
           title: 'Update Tagged Versions'
           branch: ${{ env.PR_BRANCH_PREFIX }}-${{ steps.create_pr_branchname.outputs.HASH }}
           delete-branch: true
