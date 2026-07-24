@@ -115,6 +115,19 @@ jobs:
           delete-branch: true
           assignees: ${{ github.actor }}
 
+      - name: Comment PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        if: ${{ steps.create_pr.outputs.pull-request-number != '' }}
+        run: |
+          # create comment content
+          cat > /tmp/comment-content.txt <<EOF
+          ### iVentoy Version
+          ${{ steps.update_build_find_latest.outputs.tag }}
+          EOF
+          # create comment
+          gh pr comment "${{ steps.create_pr.outputs.pull-request-number }}" --body-file /tmp/comment-content.txt
+
 #     - name: push
 #       env:
 #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
