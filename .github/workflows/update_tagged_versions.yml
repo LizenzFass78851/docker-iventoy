@@ -119,11 +119,13 @@ jobs:
           branch: ${{ env.PR_BRANCH_PREFIX }}-${{ steps.create_pr_branchname.outputs.HASH }}
           delete-branch: true
           assignees: ${{ github.actor }}
+          author: "github-actions[bot] github-actions[bot]@users.noreply.github.com"
 
       - name: Comment PR
         env:
           GH_TOKEN: ${{ github.token }}
-        if: ${{ steps.create_pr.outputs.pull-request-number != '' }}
+        if: false
+        ## ${{ steps.create_pr.outputs.pull-request-number != '' }}
         run: |
           # create comment content
           cat > /tmp/comment-content.txt <<EOF
