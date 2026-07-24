@@ -14,6 +14,11 @@ jobs:
       GIT_EMAIL: github-actions[bot]@users.noreply.github.com
       PR_BRANCH_PREFIX: feat/update-tagged_versions
 
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+
     steps:
       - name: clone
         uses: actions/checkout@v7
@@ -96,7 +101,7 @@ jobs:
         if: ${{ steps.check_open_pr.outputs.NO_OPEN_PR == 'true' }}
         env:
           OPEN_PRS: ${{ steps.check_duplicate_pr.outputs.OPEN_PRS }}
-          GH_TOKEN: ${{ secrets.PR_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           if [ -n "$OPEN_PRS" ]; then
             while read -r PR_NUMBER; do
@@ -114,6 +119,19 @@ jobs:
           branch: ${{ env.PR_BRANCH_PREFIX }}-${{ steps.create_pr_branchname.outputs.HASH }}
           delete-branch: true
           assignees: ${{ github.actor }}
+
+      - name: Comment PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        if: ${{ steps.create_pr.outputs.pull-request-number != '' }}
+        run: |
+          # create comment content
+          cat > /tmp/comment-content.txt <<EOF
+          ### iVentoy Version
+          ${{ steps.update_build_find_latest.outputs.tag }}
+          EOF
+          # create comment
+          gh pr comment "${{ steps.create_pr.outputs.pull-request-number }}" --body-file /tmp/comment-content.txt
 
 #     - name: push
 #       env:
