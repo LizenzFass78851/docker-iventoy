@@ -1,5 +1,4 @@
 ---
-version: "3.8"
 services:
   iVentoy:
     image: ghcr.io/lizenzfass78851/docker-iventoy:latest
