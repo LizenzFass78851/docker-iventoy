@@ -23,7 +23,7 @@ RUN case "${TARGETARCH}" in \
     -o /tmp/iventoy.tar.gz
 
 RUN tar -xvzf /tmp/iventoy.tar.gz -C / && \
-    mv /iventoy-${IVENTOY_VERSION} /iventoy
+    ([ ! -d /iventoy ] && mv /iventoy-${IVENTOY_VERSION} /iventoy || true)
 
 FROM main
 
