@@ -126,6 +126,12 @@ jobs:
           # create comment
           gh pr comment "${{ steps.create_pr.outputs.pull-request-number }}" --body-file /tmp/comment-content.txt
 
+      - name: Enable automatic merge
+        env:
+          GH_TOKEN: ${{ secrets.PR_TOKEN }}
+        if: ${{ steps.create_pr.outputs.pull-request-number != '' }}
+        run: gh pr merge "${{ steps.create_pr.outputs.pull-request-number }}" --delete-branch --auto --rebase
+
 #     - name: push
 #       env:
 #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
